@@ -463,7 +463,7 @@ public class RegularSudokuScript : MonoBehaviour
 	
 	//twitch plays
     #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"To set a certain coordinate with a certain value, use the command !{0} set [A-I][1-8] <0-9 / blank> | To clear all the inputs on the board, use the command !{0} full reset";
+    private readonly string TwitchHelpMessage = @"To set a certain coordinate with a certain value, use the command !{0} set [A-I][1-8] <1-9 / blank> | To clear all the inputs on the board, use the command !{0} full reset";
     #pragma warning restore 414
 	
 	string[] CoordinatesL = {"A", "B", "C", "D", "E", "F", "G", "H", "I"};
