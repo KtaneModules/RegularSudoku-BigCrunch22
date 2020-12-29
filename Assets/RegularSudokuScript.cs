@@ -18,7 +18,6 @@ public class RegularSudokuScript : MonoBehaviour
 	public AudioClip SFX;
 	
 	int[,] m_sudoku = new int[9,9];
-	int[,] m_sudokusolved = new int[9,9];
 	int[,] m_subSquare = new int[,]
 	{
 		{0,0,0,1,1,1,2,2,2},
@@ -77,29 +76,22 @@ public class RegularSudokuScript : MonoBehaviour
 	void Start()
 	{
 		Generate(33);
-		for (int x = 0; x < 9; x++)
-		{
-			for (int y = 0; y < 9; y++)
-			{
-				m_sudokusolved[y,x] = m_sudoku[y,x];
-			}
-		}
-		while (!Solve()) Solve();
-		StartCoroutine(HideStatusLight());
 		string GenBoard = "", Answer = "";
-		Debug.LogFormat("[Regular Sudoku #{0}] Initial board:", moduleId);
 		for (int x = 0; x < 9; x++)
 		{
 			GenBoard = "";
 			for (int y = 0; y < 9; y++)
 			{
 				GenBoard += m_sudoku[y,x] != 0 ? m_sudoku[y,x].ToString() : "*";
-				Answer += m_sudokusolved[y,x];
+				Answer += m_sudoku[y,x];
 				Cubes[x*9 + y].GetComponentInChildren<TextMesh>().text = m_sudoku[y,x] != 0 ? m_sudoku[y,x].ToString() : "";
 				Cubes[x*9 + y].GetComponentInChildren<TextMesh>().color = m_sudoku[y,x] != 0 ? Color.black : new Color(100f/255f, 100f/255f, 100f/255f);
 			}
 			Debug.LogFormat("[Regular Sudoku #{0}] {1}", moduleId, GenBoard);
 		}
+		while (!Solve()) Solve();
+		StartCoroutine(HideStatusLight());
+		Debug.LogFormat("[Regular Sudoku #{0}] Initial board:", moduleId);
 		Debug.LogFormat("[Regular Sudoku #{0}] --------------------------------------------------------", moduleId);
 		Debug.LogFormat("[Regular Sudoku #{0}] Answer:", moduleId);
 		for (int x = 0; x < 9; x++)
@@ -107,7 +99,7 @@ public class RegularSudokuScript : MonoBehaviour
 			Answer = "";
 			for (int y = 0; y < 9; y++)
 			{
-				Answer += m_sudokusolved[y,x];
+				Answer += m_sudoku[y,x];
 			}
 			Debug.LogFormat("[Regular Sudoku #{0}] {1}", moduleId, Answer);
 		}
@@ -137,7 +129,7 @@ public class RegularSudokuScript : MonoBehaviour
 			{
 				for (int y = 0; y < 9; y++)
 				{
-					if (Cubes[x*9 + y].GetComponentInChildren<TextMesh>().text != m_sudokusolved[y,x].ToString())
+					if (Cubes[x*9 + y].GetComponentInChildren<TextMesh>().text != m_sudoku[y,x].ToString())
 					{
 						return;
 					}
@@ -171,21 +163,21 @@ public class RegularSudokuScript : MonoBehaviour
 		{
 			for(int x = 0; x < 9; x++)
 			{
-				if(m_sudokusolved[y,x] == 0)
+				if(m_sudoku[y,x] == 0)
 				{
 					byte[] M = {0,1,2,3,4,5,6,7,8,9};
 					
 					for(int a = 0; a < 9; a++)
-						M[m_sudokusolved[a,x]] = 0;
+						M[m_sudoku[a,x]] = 0;
 
 					for(int b = 0; b < 9; b++)
-						M[m_sudokusolved[y,b]] = 0;
+						M[m_sudoku[y,b]] = 0;
 
 					int	squareIndex = m_subSquare[y,x];
 					for(int c = 0; c < 9; c++)
 					{
 						point p = m_subIndex[squareIndex,c];
-						M[m_sudokusolved[p.x,p.y]] = 0;
+						M[m_sudoku[p.x,p.y]] = 0;
 					}
 
 					int cM = 0;
@@ -212,13 +204,13 @@ public class RegularSudokuScript : MonoBehaviour
 		{
 			if(Mp[i] != 0)
 			{
-				m_sudokusolved[yp,xp] = Mp[i];
+				m_sudoku[yp,xp] = Mp[i];
 				if(Solve())
 					return true;
 			}
 		}
 
-		m_sudokusolved[yp,xp] = 0;
+		m_sudoku[yp,xp] = 0;
 		return false;
 	}
 	
@@ -522,7 +514,7 @@ public class RegularSudokuScript : MonoBehaviour
 			{
 				for (int y = 0; y < 9; y++)
 				{
-					Cubes[x*9 + y].GetComponentInChildren<TextMesh>().text = m_sudoku[y,x] != 0 ? m_sudoku[y,x].ToString() : "";
+					Cubes[x*9 + y].GetComponentInChildren<TextMesh>().text = Cubes[x*9 + y].GetComponentInChildren<TextMesh>().color.r != 0f ? "" : Cubes[x*9 + y].GetComponentInChildren<TextMesh>().text;
 				}
 			}
 		}
