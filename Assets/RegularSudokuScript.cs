@@ -77,6 +77,7 @@ public class RegularSudokuScript : MonoBehaviour
 	{
 		Generate(33);
 		string GenBoard = "", Answer = "";
+		Debug.LogFormat("[Regular Sudoku #{0}] Initial board:", moduleId);
 		for (int x = 0; x < 9; x++)
 		{
 			GenBoard = "";
@@ -91,7 +92,6 @@ public class RegularSudokuScript : MonoBehaviour
 		}
 		while (!Solve()) Solve();
 		StartCoroutine(HideStatusLight());
-		Debug.LogFormat("[Regular Sudoku #{0}] Initial board:", moduleId);
 		Debug.LogFormat("[Regular Sudoku #{0}] --------------------------------------------------------", moduleId);
 		Debug.LogFormat("[Regular Sudoku #{0}] Answer:", moduleId);
 		for (int x = 0; x < 9; x++)
