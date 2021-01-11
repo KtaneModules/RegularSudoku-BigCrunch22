@@ -93,7 +93,7 @@ public class RegularSudokuScript : MonoBehaviour
 		while (!Solve()) Solve();
 		StartCoroutine(HideStatusLight());
 		Debug.LogFormat("[Regular Sudoku #{0}] --------------------------------------------------------", moduleId);
-		Debug.LogFormat("[Regular Sudoku #{0}] Answer:", moduleId);
+		Debug.LogFormat("[Regular Sudoku #{0}] Possible answer:", moduleId);
 		for (int x = 0; x < 9; x++)
 		{
 			Answer = "";
@@ -125,7 +125,79 @@ public class RegularSudokuScript : MonoBehaviour
 				}
 			}
 			
-			for (int x = 0; x < 9; x++)
+			for (int x = 0; x < 3; x++)
+			{
+				switch (x)
+				{
+					case 0:
+						for (int y = 0; y < 9; y++)
+						{
+							int Number = 0;
+							for (int z = 0; z < 9; z++)
+							{
+								if (Cubes[y*9 + z].GetComponentInChildren<TextMesh>().text == "")
+								{
+									return;
+								}
+								Number += Int32.Parse(Cubes[y*9 + z].GetComponentInChildren<TextMesh>().text);
+							}
+							
+							if (Number != 45)
+							{
+								return;
+							}
+						}
+						break;
+					case 1:
+						for (int y = 0; y < 9; y++)
+						{
+							int Number = 0;
+							for (int z = 0; z < 9; z++)
+							{
+								if (Cubes[z*9 + y].GetComponentInChildren<TextMesh>().text == "")
+								{
+									return;
+								}
+								Number += Int32.Parse(Cubes[z*9 + y].GetComponentInChildren<TextMesh>().text);
+							}
+							
+							if (Number != 45)
+							{
+								return;
+							}
+						}
+						break;
+					case 2:
+						for (int y = 0; y < 3; y++)
+						{
+							for (int z = 0; z < 3; z++)
+							{
+								int Number = 0;
+								for (int a = 0; a < 3; a++)
+								{
+									for (int b = 0; b < 3; b++)
+									{
+										if (Cubes[((y*3)+a)*9 + ((z*3)+b)].GetComponentInChildren<TextMesh>().text == "")
+										{
+											return;
+										}
+										Number += Int32.Parse(Cubes[((y*3)+a)*9 + ((z*3)+b)].GetComponentInChildren<TextMesh>().text);
+									}
+								}
+								
+								if (Number != 45)
+								{
+									return;
+								}
+							}
+						}
+						break;
+					default:
+						break;
+				}
+			}
+			
+			/*for (int x = 0; x < 9; x++)
 			{
 				for (int y = 0; y < 9; y++)
 				{
@@ -135,6 +207,7 @@ public class RegularSudokuScript : MonoBehaviour
 					}
 				}
 			}
+			*/
 			
 			for (int x = 0; x < 81; x++)
 			{
