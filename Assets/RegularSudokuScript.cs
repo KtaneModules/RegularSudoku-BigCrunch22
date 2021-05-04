@@ -528,7 +528,7 @@ public class RegularSudokuScript : MonoBehaviour
 	
 	//twitch plays
     #pragma warning disable 414
-    private readonly string TwitchHelpMessage = @"To set a certain coordinate with a certain value, use the command !{0} set [A-I][1-9] <1-9 / blank> | To clear all the inputs on the board, use the command !{0} full reset";
+    private readonly string TwitchHelpMessage = @"To set a certain coordinate with a certain value, use the command !{0} set [A-I][1-9] <1-9 / blank>. Multiple coordinates may be set, for example: !{0} set a1 1 b1 2 | To set all tiles in reading order, use the command !{0} set all [81 VALUES] where '*' is blank | To clear all the inputs on the board, use the command !{0} full reset";
     #pragma warning restore 414
 	
 	string[] CoordinatesL = {"A", "B", "C", "D", "E", "F", "G", "H", "I"};
@@ -541,43 +541,111 @@ public class RegularSudokuScript : MonoBehaviour
 		if (Regex.IsMatch(parameters[0], @"^\s*set\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
 		{
 			yield return null;
-			if (parameters.Length != 3)
+			if (parameters.Length % 2 != 1 || parameters.Length == 1)
 			{
 				yield return "sendtochaterror Invalid parameter length. Command ignored.";
 				yield break;
 			}
-			
-			if (parameters[1].Length != 2 || !parameters[1][0].ToString().ToUpper().EqualsAny(CoordinatesL) || !parameters[1][1].ToString().EqualsAny(CoordinatesN))
-			{
-				yield return "sendtochaterror Invalid coordinates. Command ignored.";
-				yield break;
+
+			if (parameters[1].Equals("all"))
+            {
+				if (parameters.Length != 3)
+				{
+					yield return "sendtochaterror Invalid parameter length. Command ignored.";
+					yield break;
+				}
+
+				if (parameters[2].Length != 81)
+                {
+					yield return "sendtochaterror 81 values were not specified. Command ignored.";
+					yield break;
+				}
+
+				for (int x = 0; x < 9; x++)
+				{
+					for (int y = 0; y < 9; y++)
+					{
+						if (Cubes[x * 9 + y].GetComponentInChildren<TextMesh>().color.r == 0f && !Cubes[x * 9 + y].GetComponentInChildren<TextMesh>().text.Equals(parameters[2][x * 9 + y].ToString()))
+						{
+							yield return "sendtochaterror A starting clue was not set with its value. Command ignored.";
+							yield break;
+						}
+
+						if (Cubes[x * 9 + y].GetComponentInChildren<TextMesh>().color.r != 0f && !CoordinatesN.Contains(parameters[2][x * 9 + y].ToString()) && (parameters[2][x * 9 + y].ToString() != "*"))
+						{
+							yield return "sendtochaterror Invalid value detected. Command ignored.";
+							yield break;
+						}
+					}
+				}
+
+				for (int x = 0; x < 9; x++)
+				{
+					for (int y = 0; y < 9; y++)
+					{
+						if (parameters[2][x * 9 + y].ToString() == "*")
+                        {
+							while (!Cubes[x * 9 + y].GetComponentInChildren<TextMesh>().text.Equals(""))
+							{
+								Cubes[x * 9 + y].GetComponentInChildren<KMSelectable>().OnInteract();
+								yield return new WaitForSecondsRealtime(0.025f);
+							}
+						}
+                        else
+                        {
+							while (!Cubes[x * 9 + y].GetComponentInChildren<TextMesh>().text.Equals(parameters[2][x * 9 + y].ToString()))
+							{
+								Cubes[x * 9 + y].GetComponentInChildren<KMSelectable>().OnInteract();
+								yield return new WaitForSecondsRealtime(0.025f);
+							}
+						}
+					}
+				}
 			}
-			
-			if (Cubes[(Array.IndexOf(CoordinatesN, parameters[1][1].ToString()) * 9) % 81 + Array.IndexOf(CoordinatesL, parameters[1][0].ToString().ToUpper())].GetComponentInChildren<TextMesh>().color.r == 0f)
-			{
-				yield return "sendtochaterror The coordinate being changed is a starting clue. Command ignored.";
-				yield break;
+            else
+            {
+				for (int i = 1; i < parameters.Length; i += 2)
+				{
+					if (parameters[i].Length != 2 || !parameters[i][0].ToString().ToUpper().EqualsAny(CoordinatesL) || !parameters[i][1].ToString().EqualsAny(CoordinatesN))
+					{
+						yield return "sendtochaterror Invalid coordinate detected. Command ignored.";
+						yield break;
+					}
+
+					if (Cubes[(Array.IndexOf(CoordinatesN, parameters[i][1].ToString()) * 9) % 81 + Array.IndexOf(CoordinatesL, parameters[i][0].ToString().ToUpper())].GetComponentInChildren<TextMesh>().color.r == 0f)
+					{
+						yield return "sendtochaterror A coordinate being changed is a starting clue. Command ignored.";
+						yield break;
+					}
+
+					if (parameters[i + 1].ToLower() != "blank" && !parameters[i + 1].EqualsAny(CoordinatesN))
+					{
+						yield return "sendtochaterror A coordinate is being set with an invalid value. Command ignored.";
+						yield break;
+					}
+				}
+
+				for (int i = 1; i < parameters.Length; i += 2)
+				{
+					switch (parameters[i + 1].ToLower())
+					{
+						case "blank":
+							while (Cubes[(Array.IndexOf(CoordinatesN, parameters[i][1].ToString()) * 9) % 81 + Array.IndexOf(CoordinatesL, parameters[i][0].ToString().ToUpper())].GetComponentInChildren<TextMesh>().text != "")
+							{
+								Cubes[(Array.IndexOf(CoordinatesN, parameters[i][1].ToString()) * 9) % 81 + Array.IndexOf(CoordinatesL, parameters[i][0].ToString().ToUpper())].GetComponentInChildren<KMSelectable>().OnInteract();
+								yield return new WaitForSecondsRealtime(0.025f);
+							}
+							break;
+						default:
+							while (Cubes[(Array.IndexOf(CoordinatesN, parameters[i][1].ToString()) * 9) % 81 + Array.IndexOf(CoordinatesL, parameters[i][0].ToString().ToUpper())].GetComponentInChildren<TextMesh>().text != parameters[i + 1].ToLower())
+							{
+								Cubes[(Array.IndexOf(CoordinatesN, parameters[i][1].ToString()) * 9) % 81 + Array.IndexOf(CoordinatesL, parameters[i][0].ToString().ToUpper())].GetComponentInChildren<KMSelectable>().OnInteract();
+								yield return new WaitForSecondsRealtime(0.025f);
+							}
+							break;
+					}
+				}
 			}
-			
-			if (parameters[2].ToLower() != "blank" && !parameters[2].EqualsAny(CoordinatesN))
-			{
-				yield return "sendtochaterror The coordinate is being set with an invalid character. Command ignored.";
-				yield break;
-			}
-			
-			switch (parameters[2].ToLower())
-			{
-				case "blank":
-					Cubes[(Array.IndexOf(CoordinatesN, parameters[1][1].ToString()) * 9) % 81 + Array.IndexOf(CoordinatesL, parameters[1][0].ToString().ToUpper())].GetComponentInChildren<TextMesh>().text = "9";
-					break;
-				case "1":
-					Cubes[(Array.IndexOf(CoordinatesN, parameters[1][1].ToString()) * 9) % 81 + Array.IndexOf(CoordinatesL, parameters[1][0].ToString().ToUpper())].GetComponentInChildren<TextMesh>().text = "";
-					break;
-				default:
-					Cubes[(Array.IndexOf(CoordinatesN, parameters[1][1].ToString()) * 9) % 81 + Array.IndexOf(CoordinatesL, parameters[1][0].ToString().ToUpper())].GetComponentInChildren<TextMesh>().text = (Int32.Parse(parameters[2]) - 1).ToString();
-					break;
-			}
-			Cubes[(Array.IndexOf(CoordinatesN, parameters[1][1].ToString()) * 9) % 81 + Array.IndexOf(CoordinatesL, parameters[1][0].ToString().ToUpper())].GetComponentInChildren<KMSelectable>().OnInteract();
 		}
 		
 		if (Regex.IsMatch(command, @"^\s*full reset\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
@@ -589,6 +657,21 @@ public class RegularSudokuScript : MonoBehaviour
 				{
 					Cubes[x*9 + y].GetComponentInChildren<TextMesh>().text = Cubes[x*9 + y].GetComponentInChildren<TextMesh>().color.r != 0f ? "" : Cubes[x*9 + y].GetComponentInChildren<TextMesh>().text;
 				}
+			}
+		}
+	}
+
+	IEnumerator TwitchHandleForcedSolve()
+    {
+		for (int x = 0; x < 9; x++)
+		{
+			for (int y = 0; y < 9; y++)
+			{
+				while (Cubes[x * 9 + y].GetComponentInChildren<TextMesh>().text != m_sudoku[y,x].ToString())
+                {
+					Cubes[x*9 + y].GetComponentInChildren<KMSelectable>().OnInteract();
+					yield return new WaitForSecondsRealtime(0.025f);
+                }
 			}
 		}
 	}
