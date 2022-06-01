@@ -93,7 +93,7 @@ public class RegularSudokuScript : MonoBehaviour
 		while (!Solve()) Solve();
 		StartCoroutine(HideStatusLight());
 		Debug.LogFormat("[Regular Sudoku #{0}] --------------------------------------------------------", moduleId);
-		Debug.LogFormat("[Regular Sudoku #{0}] Possible answer:", moduleId);
+		Debug.LogFormat("[Regular Sudoku #{0}] Answer:", moduleId);
 		for (int x = 0; x < 9; x++)
 		{
 			Answer = "";
@@ -365,9 +365,9 @@ public class RegularSudokuScript : MonoBehaviour
 	bool IsSudokuUnique()
 	{
 		int[,] m = GetCopy();
-		bool b = TestUniqueness();
+		int u = TestUniqueness();
 		Data = m;
-		return b;
+		return b == 1;
 	}
 
 	bool Feasible(int[] M)
@@ -458,7 +458,10 @@ public class RegularSudokuScript : MonoBehaviour
 		return true;
 	}
 
-	bool TestUniqueness()
+	// Returns 0 if there are no solutions,
+	// 1 if there is only one solution (unique puzzle),
+	// or 2 if there are multiple solutions
+	int TestUniqueness()
 	{
 		int xp = 0;
 		int yp = 0;
@@ -513,17 +516,16 @@ public class RegularSudokuScript : MonoBehaviour
 			if(Mp[i] != 0)
 			{
 				m_sudoku[yp,xp] = Mp[i];
-				if(TestUniqueness())
-					success++;
+				success += TestUniqueness();
 
 				m_sudoku[yp,xp] = 0;
 
 				if(success > 1)
-					return false;
+					return 2;
 			}
 		}
 
-		return success == 1;
+		return success;
 	}
 	
 	//twitch plays
