@@ -505,10 +505,10 @@ public class RegularSudokuScript : MonoBehaviour
 		}
 
 		if(cMp == 10)
-			return true;
+			return 1;
 
 		if(cMp == 0)
-			return false;
+			return 0;
 
 		int success = 0;
 		for(int i = 1; i < 10; i++)
