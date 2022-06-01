@@ -367,7 +367,7 @@ public class RegularSudokuScript : MonoBehaviour
 		int[,] m = GetCopy();
 		int u = TestUniqueness();
 		Data = m;
-		return b == 1;
+		return u == 1;
 	}
 
 	bool Feasible(int[] M)
